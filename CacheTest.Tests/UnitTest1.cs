@@ -32,13 +32,13 @@ namespace Tests
                 });
 
             Assert.ThrowsAsync<Exception>(async () => {
-                await _cache.CachedGetSomething();
+                await _cache.GetSomething();
             });
 
-            var result = await _cache.CachedGetSomething();
+            var result = await _cache.GetSomething();
             Assert.AreEqual(result, "2");
 
-            var nextResult = await _cache.CachedGetSomething();
+            var nextResult = await _cache.GetSomething();
             Assert.AreEqual(nextResult, "2");
         }
 
@@ -61,22 +61,11 @@ namespace Tests
             A.CallTo(() => _repo.GetString())
                 .ReturnsLazily(x => func());
 
-            // var tasks = new Action[] {
-            //     ,
-            //     () => _cache.CachedGetSomething(),
-            //     () => _cache.CachedGetSomething(),
-            //     () => _cache.CachedGetSomething(),
-            //     () => _cache.CachedGetSomething(),
-            //     () => _cache.CachedGetSomething(),
-            // };
-
-            //IEnumerable<int> tasks = ;
-
             var tasks = new [] { 0, 99, 105, 140 }
                 .Select<int, Task<string>>(t => {
                     return Task.Factory.StartNew(async () => {
                         await Task.Delay(t);
-                        return await _cache.CachedGetSomething();
+                        return await _cache.GetSomething();
                     }).Unwrap();
                 }).ToArray();
 

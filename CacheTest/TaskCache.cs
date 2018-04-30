@@ -3,38 +3,15 @@ using System.Threading.Tasks;
 
 namespace CacheTest {
   public class TaskCache {
-    private Lazy<Task<string>> _lazy;
+    private readonly IRepository _repository;
+    private Func<Task<string>> _cachedGetSomething;
 
     public TaskCache(IRepository repository) {
-
-      async Task<string> Factory() {
-        try {
-          return await repository.GetString();
-        } catch (Exception e) {
-          _lazy = new Lazy<Task<string>>(Factory);
-          throw;
-        }
-      };
-
-      _lazy = new Lazy<Task<string>>(Factory);
+      _cachedGetSomething = TaskExtensions.CacheResult(repository.GetString);
     }
 
-    private async Task<string> Retry(Func<Task<string>> factory) {
-      try {
-        return await factory();
-      } catch (Exception e) {
-        _lazy = new Lazy<Task<string>>(Retry(factory));
-        throw;
-      }
-    }
-
-
-    private async Task<string> GetSomething() {
-      return await Task.FromResult("Hi");
-    }
-
-    public async Task<string> CachedGetSomething (){
-      return await _lazy.Value;
+    public async Task<string> GetSomething(){
+      return await _cachedGetSomething();
     }
   }
 }
